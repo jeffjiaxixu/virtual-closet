@@ -1,22 +1,27 @@
 from tkinter import * 
 from CVStuff import *
 from OOPy import *
+import PIL
+from PIL import ImageTk
 ####################################
 # customize these functions
 ####################################
 
 def init(data):
+    #specify dimension in main menu
     data.iconWidth = data.width/3
     data.iconHeight = data.height/3
     data.margin = data.width/10
     data.hasStarted = False
     data.startWebcam = False
+    #all the logos
     data.AELogo = PhotoImage(file="AELogo.png")
     data.AFLogo = PhotoImage(file="AFLogo.png")
     data.NikeLogo = PhotoImage(file="NikeLogo.png")
     data.SLogo = PhotoImage(file="SupremeLogo.png")
     data.textSize = data.width//25
     data.timer = 0
+    #running each company
     data.waitAE = False
     data.waitAF = False
     data.waitNike = False
@@ -25,17 +30,50 @@ def init(data):
     data.runAF = False
     data.runNike = False
     data.runSupreme = False
+    data.runShirtMenu = False
+    data.runGlassesMenu = False
+    #dimension of submenu
     data.menuMargin = data.width/20
     data.menuCellWidth = (data.width-data.menuMargin*2)/3
     data.menuCellHeight = (data.height-data.menuMargin*4)/3
+    data.menuButtonHeight = data.height/6
+    data.rightArrow = PhotoImage(file="rightArrow.png")
+    #color of icons on main menu
     data.AEBrown = rgbString(191, 175, 155)
     data.AFMaroon = rgbString(88, 36, 40)
     data.NikeRed = rgbString(215, 31, 23)
     data.SupremeRed = rgbString(237, 28, 36)
     data.Glasses = Glasses(data)
+    #indicate the cell selected
     data.highlightedCell = (3, 3)
     data.selectedGlasses = 10
     data.selectedShirt = 10
+    #all the AE shirts for menu display
+    data.AEDis1 = ImageTk.PhotoImage(Image.open("./AEShirts/AE1.png"))
+    data.AEDis2 = ImageTk.PhotoImage(Image.open("./AEShirts/AE2.png"))
+    data.AEDis3 = ImageTk.PhotoImage(Image.open("./AEShirts/AE3.png"))
+    data.AEDis4 = ImageTk.PhotoImage(Image.open("./AEShirts/AE4.png"))
+    data.AEDis5 = ImageTk.PhotoImage(Image.open("./AEShirts/AE5.png"))
+    data.AEDis6 = ImageTk.PhotoImage(Image.open("./AEShirts/AE6.png"))
+    data.AEDis7 = ImageTk.PhotoImage(Image.open("./AEShirts/AE7.png"))
+    data.AEDis8 = ImageTk.PhotoImage(Image.open("./AEShirts/AE8.png"))
+    data.AEDis9 = ImageTk.PhotoImage(Image.open("./AEShirts/AE9.png"))
+    #all the AE shirts raw file to be used in OpenCV
+    data.AECV1 = "./AEShirts/AE1.png"
+    data.AECV2 = "./AEShirts/AE2.png"
+    data.AECV3 = "./AEShirts/AE3.png"
+    data.AECV4 = "./AEShirts/AE4.png"
+    data.AECV5 = "./AEShirts/AE5.png"
+    data.AECV6 = "./AEShirts/AE6.png"
+    data.AECV7 = "./AEShirts/AE7.png"
+    data.AECV8 = "./AEShirts/AE8.png"
+    data.AECV9 = "./AEShirts/AE9.png"
+    #list of images for use in OpenCV
+    data.AEList=[data.AECV1, data.AECV2, data.AECV3, data.AECV4, data.AECV5, data.AECV6, data.AECV7, 
+    data.AECV8, data.AECV9]
+    #make the list into a dictionary that I can call from
+    data.AEDict = dict()
+    createDict(data)
     resizeImage(data)
 
 def mousePressed(event, data):
@@ -47,6 +85,7 @@ def mousePressed(event, data):
             data.hasStarted = True
             data.waitAE = True
             data.startWebcam = False
+            data.runShirtMenu = True
         elif event.x > data.width-data.margin-data.iconWidth and \
         event.x < data.width-data.margin and event.y > data.margin and \
         event.y < data.margin+data.iconHeight:
@@ -54,6 +93,7 @@ def mousePressed(event, data):
             data.hasStarted = True
             data.waitAF = True
             data.startWebcam = False
+            data.runShirtMenu = True
         elif event.x > data.margin and event.x < data.margin+data.iconWidth and \
         event.y > data.height-data.margin-data.iconHeight and \
         event.y < data.height-data.margin:
@@ -61,12 +101,14 @@ def mousePressed(event, data):
             data.hasStarted = True
             data.waitNike = True
             data.startWebcam = False
+            data.runShirtMenu = True
         elif event.x > data.width-data.margin-data.iconWidth and event.x < data.width-data.margin \
         and event.y > data.height-data.margin-data.iconHeight and event.y < data.height-data.margin:
             print("Run Supreme")
             data.hasStarted = True
             data.waitSupreme = True
             data.startWebcam = False
+            data.runShirtMenu = True
     #check for mousePressed in clothes menu
     if data.runAE or data.runAF or data.runNike or data.runSupreme:
         for row in range(3):
@@ -77,58 +119,15 @@ def mousePressed(event, data):
                 event.y < data.menuMargin+data.menuCellHeight*(row+1):
                     data.startWebcam = True
         findSelectedClothes(data, event.x, event.y)
-                    
-#selectedBlocks
-def findSelectedClothes(data, x, y):
-    if x > data.menuMargin and x < data.menuMargin+data.menuCellWidth and \
-    y > data.menuMargin*3 and y < data.menuMargin*3+data.menuCellHeight:
-        print("1")
-        data.selectedGlasses = 0
-        data.highlightedCell = (0, 0)
-    elif x > data.menuMargin+data.menuCellWidth and x < data.menuMargin+data.menuCellWidth*2 \
-    and y > data.menuMargin*3 and y < data.menuMargin*3+data.menuCellHeight:
-        print("2")
-        data.selectedGlasses = 1
-        data.highlightedCell = (1, 0)
-    elif x > data.menuMargin+data.menuCellWidth*2 and x < data.menuMargin+data.menuCellWidth*3 \
-    and y > data.menuMargin*3 and y < data.menuMargin*3+data.menuCellHeight:
-        print("3")
-        data.selectedGlasses = 2
-        data.highlightedCell = (2, 0)
-    elif x > data.menuMargin and x < data.menuMargin+data.menuCellWidth and \
-    y > data.menuMargin*3+data.menuCellHeight and y < data.menuMargin*3+data.menuCellHeight*2:
-        print("4")
-        data.selectedGlasses = 3
-        data.highlightedCell = (0, 1)
-    elif x > data.menuMargin+data.menuCellWidth and x < data.menuMargin+data.menuCellWidth*2 \
-    and y > data.menuMargin*3+data.menuCellHeight and y < data.menuMargin*3+data.menuCellHeight*2:
-        print("5")
-        data.selectedGlasses = 4
-        data.highlightedCell = (1, 1)
-    elif x > data.menuMargin+data.menuCellWidth*2 and x < data.menuMargin+data.menuCellWidth*3 \
-    and y > data.menuMargin*3+data.menuCellHeight and y < data.menuMargin*3+data.menuCellHeight*2:
-        print("6")
-        data.selectedGlasses = 5
-        data.highlightedCell = (2, 1)
-    elif x > data.menuMargin and x < data.menuMargin+data.menuCellWidth and \
-    y > data.menuMargin*3+data.menuCellHeight*2 and y < data.menuMargin*3+data.menuCellHeight*3:
-        print("7")
-        data.selectedGlasses = 6
-        data.highlightedCell = (0, 2)
-    elif x > data.menuMargin+data.menuCellWidth and x < data.menuMargin+data.menuCellWidth*2 \
-    and y > data.menuMargin*3+data.menuCellHeight*2 and y < data.menuMargin*3+data.menuCellHeight*3:
-        print("8")
-        data.selectedGlasses = 7
-        data.highlightedCell = (1, 2)
-    elif x > data.menuMargin+data.menuCellWidth*2 and x < data.menuMargin+data.menuCellWidth*3 \
-    and y > data.menuMargin*3+data.menuCellHeight*2 and y < data.menuMargin*3+data.menuCellHeight*3:
-        print("9")
-        data.selectedGlasses = 8
-        data.highlightedCell = (2, 2)
-    
+        if data.runShirtMenu:
+            if event.x > data.width-data.menuMargin and event.x < data.width and \
+            event.y > data.height/2-data.menuButtonHeight/2 and event.y < data.height/2+data.menuButtonHeight/2:
+                data.runShirtMenu = False
+                data.runGlassesMenu = True
+                
 def runWebcam(data):
     if data.startWebcam:
-        runCV()
+        runCV(data.AEDict[data.selectedShirt])
 
 def keyPressed(event, data):
     if data.hasStarted:
@@ -144,6 +143,68 @@ def timerFired(data):
         data.timer += 1
         if data.timer % 2 == 0:
             data.runAE = True
+
+#selectedBlocks
+def findSelectedClothes(data, x, y):
+    if x > data.menuMargin and x < data.menuMargin+data.menuCellWidth and \
+    y > data.menuMargin*3 and y < data.menuMargin*3+data.menuCellHeight:
+        print("1")
+        if data.runShirtMenu:
+            data.selectedShirt = 0
+        data.highlightedCell = (0, 0)
+    elif x > data.menuMargin+data.menuCellWidth and x < data.menuMargin+data.menuCellWidth*2 \
+    and y > data.menuMargin*3 and y < data.menuMargin*3+data.menuCellHeight:
+        print("2")
+        if data.runShirtMenu:
+            data.selectedShirt = 1
+        data.highlightedCell = (1, 0)
+    elif x > data.menuMargin+data.menuCellWidth*2 and x < data.menuMargin+data.menuCellWidth*3 \
+    and y > data.menuMargin*3 and y < data.menuMargin*3+data.menuCellHeight:
+        print("3")
+        if data.runShirtMenu:
+            data.selectedShirt = 2
+        data.highlightedCell = (2, 0)
+    elif x > data.menuMargin and x < data.menuMargin+data.menuCellWidth and \
+    y > data.menuMargin*3+data.menuCellHeight and y < data.menuMargin*3+data.menuCellHeight*2:
+        print("4")
+        if data.runShirtMenu:
+            data.selectedShirt = 3
+        data.highlightedCell = (0, 1)
+    elif x > data.menuMargin+data.menuCellWidth and x < data.menuMargin+data.menuCellWidth*2 \
+    and y > data.menuMargin*3+data.menuCellHeight and y < data.menuMargin*3+data.menuCellHeight*2:
+        print("5")
+        if data.runShirtMenu:
+            data.selectedShirt = 4
+        data.highlightedCell = (1, 1)
+    elif x > data.menuMargin+data.menuCellWidth*2 and x < data.menuMargin+data.menuCellWidth*3 \
+    and y > data.menuMargin*3+data.menuCellHeight and y < data.menuMargin*3+data.menuCellHeight*2:
+        print("6")
+        if data.runShirtMenu:
+            data.selectedShirt = 5
+        data.highlightedCell = (2, 1)
+    elif x > data.menuMargin and x < data.menuMargin+data.menuCellWidth and \
+    y > data.menuMargin*3+data.menuCellHeight*2 and y < data.menuMargin*3+data.menuCellHeight*3:
+        print("7")
+        if data.runShirtMenu:
+            data.selectedShirt = 6
+        data.highlightedCell = (0, 2)
+    elif x > data.menuMargin+data.menuCellWidth and x < data.menuMargin+data.menuCellWidth*2 \
+    and y > data.menuMargin*3+data.menuCellHeight*2 and y < data.menuMargin*3+data.menuCellHeight*3:
+        print("8")
+        if data.runShirtMenu:
+            data.selectedShirt = 7
+        data.highlightedCell = (1, 2)
+    elif x > data.menuMargin+data.menuCellWidth*2 and x < data.menuMargin+data.menuCellWidth*3 \
+    and y > data.menuMargin*3+data.menuCellHeight*2 and y < data.menuMargin*3+data.menuCellHeight*3:
+        print("9")
+        if data.runShirtMenu:
+            data.selectedShirt = 8
+        data.highlightedCell = (2, 2)
+        
+#create a dictionary of pictures
+def createDict(data):
+    for i in range(len(data.AEList)):
+        data.AEDict[i] = data.AEList[i]
 
 #get color from rgb string
 #SOURCE: 15-112 course website
@@ -198,7 +259,7 @@ def drawMenuBoard(canvas, data, company):
             data.menuMargin*3+data.menuCellHeight*row,
             data.menuMargin+data.menuCellWidth*(col+1),
             data.menuMargin*3+data.menuCellHeight*(row+1), fill=background, width=5)
-    canvas.create_text(data.width/2, data.menuMargin, text="Select a Pair of Glasses",
+    canvas.create_text(data.width/2, data.menuMargin, text="What do you want to try?",
     font="Verdana %d" % data.textSize, fill="lime green")
     canvas.create_text(data.width/2, data.menuMargin*2, text='"S" to Begin',
     font="Verdana %d" % int(data.textSize/1.7), fill="DarkSlateGray1")
@@ -207,17 +268,34 @@ def drawMenuBoard(canvas, data, company):
     canvas.create_text(data.width*5/6, data.menuMargin*2, text='"Q" to Quit Camara',
     font="Verdana %d" % int(data.textSize/1.7), fill="LightGoldenrod1")
         
+def drawMenuButton(canvas, data):
+    if data.runShirtMenu:
+        canvas.create_rectangle(data.width-data.menuMargin, data.height/2-data.menuButtonHeight/2,
+        data.width, data.height/2+data.menuButtonHeight/2, fill="Gray")
+        canvas.create_image(data.width-data.menuMargin/2, data.height/2, image=data.rightArrow)
+    
 #for now this function loops over the boxes to only draw the glasses
 #in the future it will draw from a list of clothes
-def drawClothes(canvas, data):
-    for row in range(3):
-        for col in range(3):
-            '''canvas.create_image(data.menuCellWidth*col+data.menuCellWidth/2, 
-            data.menuCellHeight*row+data.menuCellHeight/2, image=data.Glasses.returnImage(data))'''
-            canvas.create_text(data.menuMargin+data.menuCellWidth*col+data.menuCellWidth/2, 
-            data.menuMargin+data.menuCellHeight*row+data.menuCellHeight/2, text="Clothing Here", 
-            font="Verdana 10", fill="Black")
-
+def drawAEClothes(canvas, data):
+    canvas.create_image(data.menuMargin+data.menuCellWidth/2, data.menuMargin*3+data.menuCellHeight/2,
+    image=data.AEDis1)
+    canvas.create_image(data.menuMargin+data.menuCellWidth+data.menuCellWidth/2, 
+    data.menuMargin*3+data.menuCellHeight/2, image=data.AEDis2)
+    canvas.create_image(data.menuMargin+data.menuCellWidth*2+data.menuCellWidth/2, 
+    data.menuMargin*3+data.menuCellHeight/2, image=data.AEDis3)
+    canvas.create_image(data.menuMargin+data.menuCellWidth/2,
+    data.menuMargin*3+data.menuCellHeight+data.menuCellHeight/2, image=data.AEDis4)
+    canvas.create_image(data.menuMargin+data.menuCellWidth+data.menuCellWidth/2,
+    data.menuMargin*3+data.menuCellHeight+data.menuCellHeight/2, image=data.AEDis5)
+    canvas.create_image(data.menuMargin+data.menuCellWidth*2+data.menuCellWidth/2,
+    data.menuMargin*3+data.menuCellHeight+data.menuCellHeight/2, image=data.AEDis6)
+    canvas.create_image(data.menuMargin+data.menuCellWidth/2,
+    data.menuMargin*3+data.menuCellHeight*2+data.menuCellHeight/2, image=data.AEDis7)
+    canvas.create_image(data.menuMargin+data.menuCellWidth+data.menuCellWidth/2,
+    data.menuMargin*3+data.menuCellHeight*2+data.menuCellHeight/2, image=data.AEDis8)
+    canvas.create_image(data.menuMargin+data.menuCellWidth*2+data.menuCellWidth/2,
+    data.menuMargin*3+data.menuCellHeight*2+data.menuCellHeight/2, image=data.AEDis9)
+            
 def drawHighLightedCell(canvas, data):
     if data.highlightedCell != (3, 3):
         col, row = data.highlightedCell
@@ -231,8 +309,10 @@ def redrawAll(canvas, data):
     else:
         if data.runAE:
             drawMenuBoard(canvas, data, "AE")
-            drawClothes(canvas, data)
             drawHighLightedCell(canvas, data)
+            if data.runShirtMenu:
+                drawAEClothes(canvas, data)
+        drawMenuButton(canvas, data)
 
 ####################################
 # use the run function as-is

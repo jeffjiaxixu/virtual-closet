@@ -3,14 +3,14 @@ import cv2
 
 #SOURCE http://www.life2coding.com/python-opencv-based-face-masking-tutorial/
 #inspiration taken from this site while I wrote majority of the code
-def runCV():
+def runCV(shirt):
     face = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-    nose = cv2.CascadeClassifier('haarcascade_nose.xml')
+    #nose = cv2.CascadeClassifier('haarcascade_nose.xml')
     upperBody = cv2.CascadeClassifier('haarcascade_upperbody.xml')
     cap = cv2.VideoCapture(0)
-    cap.set(cv2.CAP_PROP_FPS, 30)
+    cap.set(cv2.CAP_PROP_FPS, 60)
     specs_ori = cv2.imread('glasses.png', -1)
-    tshirt_ori = cv2.imread('tshirt.png', -1)
+    tshirt_ori = cv2.imread(shirt, -1)
     
     def transparentOverlay(src, overlay, pos=(0, 0), scale=1):
         overlay = cv2.resize(overlay, (0, 0), fx=scale, fy=scale)
@@ -31,11 +31,11 @@ def runCV():
         ret, img = cap.read()
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         faces = face.detectMultiScale(gray, 1.3, 5)
-        bodies = upperBody.detectMultiScale(gray, 1.3, 5)
+        bodies = upperBody.detectMultiScale(gray, 1.1, 5)
         #draw rectangle on face
         for (x,y,w,h) in faces:
             cv2.rectangle(img,(x,y),(x+w,y+h),(0,0,255),3)
-            cv2.rectangle(img, (x+w//2-20, y+h//2-20), (x+w//2+20, y+h//2+20), (0, 0, 255),2) 
+            #cv2.rectangle(img, (x+w//2-20, y+h//2-20), (x+w//2+20, y+h//2+20), (0, 0, 255),2) 
             #print(x+w/2, y+h/2)
         
         #draw rectangle on upperbody
@@ -56,12 +56,11 @@ def runCV():
                 specs = cv2.resize(specs_ori, (w, sh_glass),interpolation=cv2.INTER_CUBIC)
                 transparentOverlay(face_glass_roi_color,specs)
         
-        #overlay shirt onto upperbody
-        #buggy af will fix later
+        #overlay shirt on upperbody
         for (x, y, w, h) in bodies:
             if h > 0 and w > 0:
                 
-                tshirt_symin = int(y + 4 * h /6)
+                tshirt_symin = int(y + 2 * h /6)
                 tshirt_symax = int(y + 10 * h / 5)
                 sh_tshirt = tshirt_symax - tshirt_symin
                 
